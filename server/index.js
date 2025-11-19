@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const aiService = require('./aiService');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +16,51 @@ const io = socketIo(server, {
 
 app.use(cors());
 app.use(express.json());
+
+// API endpoint for AI text-to-sketch
+app.post('/api/ai/text-to-sketch', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+    const result = await aiService.textToSketch(prompt);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API endpoint for AI auto-complete
+app.post('/api/ai/auto-complete', async (req, res) => {
+  try {
+    const { strokes } = req.body;
+    const result = await aiService.autoComplete(strokes);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API endpoint for drawing optimization
+app.post('/api/ai/optimize', async (req, res) => {
+  try {
+    const { drawingData } = req.body;
+    const result = await aiService.optimizeDrawing(drawingData);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    aiEnabled: aiService.enabled,
+    timestamp: Date.now() 
+  });
+});
 
 // Store active users
 const users = new Map();

@@ -26,10 +26,12 @@ An intelligent collaborative drawing canvas with real-time multi-user painting a
 - ⏳ Canvas zoom and pan
 - ⏳ Additional export formats (JPG)
 
-### Phase 4: AI Integration (Planned)
-- ⏳ AI model for drawing auto-completion
-- ⏳ Text-to-sketch generation
-- ⏳ AI-assisted tool optimization
+### Phase 4: AI Integration ✅
+- ✅ AI framework and service architecture
+- ✅ Text-to-sketch generation (demo with mock data)
+- ✅ Auto-completion framework (ready for ML model)
+- ✅ Drawing optimization framework (ready for ML model)
+- ✅ Collapsible AI Assistant UI panel
 
 ## Tech Stack
 
@@ -43,12 +45,14 @@ An intelligent collaborative drawing canvas with real-time multi-user painting a
 - **Node.js** - Runtime environment
 - **Express** - Web framework
 - **Socket.io** - WebSocket server for real-time communication
+- **AI Service Module** - Framework for AI integration (OpenAI, Stable Diffusion, etc.)
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js (v20 or higher)
 - npm (v10 or higher)
+- (Optional) OpenAI API key for full AI features
 
 ### Installation
 
@@ -72,23 +76,33 @@ npm install
 
 ### Running the Application
 
-1. Start the backend server:
+1. **(Optional) Configure AI Features:**
+   
+   To enable full AI capabilities, create a `.env` file in the `server` directory:
+   ```bash
+   cd server
+   echo "OPENAI_API_KEY=your_api_key_here" > .env
+   ```
+   
+   Without this configuration, AI features will work with demo/mock data.
+
+2. Start the backend server:
 ```bash
 cd server
 npm start
 ```
 The server will run on `http://localhost:3001`
 
-2. In a new terminal, start the frontend development server:
+3. In a new terminal, start the frontend development server:
 ```bash
 cd client
 npm run dev
 ```
 The client will run on `http://localhost:5173`
 
-3. Open your browser and navigate to `http://localhost:5173`
+4. Open your browser and navigate to `http://localhost:5173`
 
-4. Open multiple browser windows/tabs to test real-time collaboration!
+5. Open multiple browser windows/tabs to test real-time collaboration!
 
 ## Usage
 
@@ -100,12 +114,20 @@ The client will run on `http://localhost:5173`
 
 ### Canvas Actions
 - **Clear Canvas**: Removes all drawings from the canvas for all users.
-- **Export PNG**: Downloads the current canvas as a PNG image.
+- **Export PNG/JPG**: Downloads the current canvas as an image.
+- **Undo/Redo**: Navigate through your drawing history.
+- **Zoom/Pan**: Zoom in/out with mouse wheel or buttons, pan with Ctrl+drag.
 
 ### Collaboration
 - See online users in the right sidebar with their color-coded identities.
 - Watch other users' cursors move in real-time.
 - All drawing actions are synchronized instantly across all connected users.
+
+### AI Assistant
+- **Text-to-Sketch**: Describe what you want (e.g., "house", "tree", "star") and AI generates a basic sketch.
+- **Auto-Complete**: (Framework ready) AI predicts and completes your drawing strokes.
+- **Optimize Drawing**: (Framework ready) AI suggests improvements for your artwork.
+- Toggle the AI panel using the 🤖 button on the right side.
 
 ## Project Structure
 
@@ -115,7 +137,9 @@ APT/
 │   ├── src/
 │   │   ├── components/  # React components
 │   │   │   ├── Canvas.jsx
-│   │   │   └── Canvas.css
+│   │   │   ├── Canvas.css
+│   │   │   ├── AIAssistant.jsx
+│   │   │   └── AIAssistant.css
 │   │   ├── hooks/       # Custom React hooks
 │   │   │   └── useSocket.js
 │   │   ├── App.jsx      # Main app component
@@ -127,8 +151,24 @@ APT/
 │
 └── server/              # Node.js backend
     ├── index.js         # Express + Socket.io server
-    └── package.json
+    ├── aiService.js     # AI service module
+    ├── package.json
+    └── .env.example     # Environment variables template
 ```
+
+## Environment Variables
+
+Create a `.env` file in the `server` directory with the following variables:
+
+```env
+# Optional: OpenAI API Key for AI features
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Server Port (default: 3001)
+PORT=3001
+```
+
+**Note**: AI features work with demo data when API keys are not configured.
 
 ## Contributing
 

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import AIAssistant from './AIAssistant';
 import './Canvas.css';
 
 const Canvas = ({ socket, userId }) => {
@@ -502,6 +503,11 @@ const Canvas = ({ socket, userId }) => {
           );
         })}
       </div>
+
+      <AIAssistant 
+        canvasRef={canvasRef}
+        onApplySketch={saveState}
+      />
     </div>
   );
 };
