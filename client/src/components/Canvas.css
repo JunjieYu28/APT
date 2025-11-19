@@ -45,7 +45,19 @@
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+
+.tool-section button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tool-section button:disabled:hover {
+  background: #34495e;
+  transform: none;
 }
 
 .tool-section button:hover {
@@ -181,3 +193,34 @@
 .toolbar::-webkit-scrollbar-thumb:hover {
   background: #3d566e;
 }
+
+/* Action buttons styling */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.action-buttons button {
+  width: auto;
+  margin-bottom: 0;
+}
+
+/* Hint text styling */
+.hint {
+  font-size: 11px;
+  color: #95a5a6;
+  margin-top: 10px;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Canvas wrapper improvements */
+.canvas-wrapper {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
