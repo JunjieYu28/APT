@@ -2,6 +2,8 @@
 
 An intelligent collaborative drawing canvas with real-time multi-user painting and AI assistance.
 
+# Waiting for your Collaboration!
+
 ## Features
 
 ### Phase 1: Basic Canvas Functionality (MVP) ✅
@@ -173,6 +175,23 @@ PORT=3001
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Need To Be Done Further
+
+1. **User login nickname and avatar selection**
+2. **Visualization of tools such as the eraser**
+3. **Each user can create their own canvas** (with naming and theme setting), and the canvas can be shared to the public square
+4. **Currently, I haven’t found a suitable text-to-sketch AI, sketch auto-completion AI, or theme-based drawing AI.** I may need to train one myself, and I’m currently considering **Sketch-RNN**
+5. **I would love to fine-tune a drawing AI myself**, but it depends on time
+6. **Looking forward to collaborators** — if you have ideas in this domain, want to build this project together, or have relevant AI models, feel free to contact me!
+
+中文版：  
+1.用户登录昵称以及头像的选择  
+2.erase等的可视化  
+3.每个用户可以创建自己的画布（命名，定主题），可以分享画布至广场等  
+4.目前没有看到很合适的文生画的AI，或者自动补全绘画的AI,以及通过主题画主题内容的AI,可能需要自己训练，现在在考虑的是Sketch-RNN  
+5.当然很想自己微调一个绘画的AI，但得看时间了  
+6.期待合作者，如果你有这方面的想法或者想一起来完成这个项目，或者你有相关的AI，欢迎联系！  
 
 ## License
 
