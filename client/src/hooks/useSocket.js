@@ -31,6 +31,7 @@ export const useSocket = () => {
       setIsConnected(false);
     });
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSocket(socketInstance);
 
     return () => {

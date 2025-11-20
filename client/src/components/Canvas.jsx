@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import AIAssistant from './AIAssistant';
 import './Canvas.css';
 
+/* eslint-disable react-hooks/exhaustive-deps */
 const Canvas = ({ socket, userId }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -154,18 +155,20 @@ const Canvas = ({ socket, userId }) => {
       case 'rectangle-filled':
         ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
         break;
-      case 'circle':
+      case 'circle': {
         const radius = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
         ctx.beginPath();
         ctx.arc(x0, y0, radius, 0, 2 * Math.PI);
         ctx.stroke();
         break;
-      case 'circle-filled':
+      }
+      case 'circle-filled': {
         const radiusFilled = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
         ctx.beginPath();
         ctx.arc(x0, y0, radiusFilled, 0, 2 * Math.PI);
         ctx.fill();
         break;
+      }
       case 'line':
         ctx.beginPath();
         ctx.moveTo(x0, y0);

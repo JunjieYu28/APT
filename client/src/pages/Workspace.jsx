@@ -36,9 +36,6 @@ function Workspace() {
       setLoading(true);
       const response = await canvasAPI.getAll();
       setCanvases(response.data.canvases);
-    } catch (err) {
-      console.error('Failed to load canvases:', err);
-      setError('Failed to load canvases');
     } finally {
       setLoading(false);
     }
@@ -61,7 +58,7 @@ function Workspace() {
       setNewCanvasName('');
       setNewCanvasTheme('default');
       setError('');
-    } catch (err) {
+    } catch {
       setError('Failed to create canvas');
     }
   };
@@ -75,7 +72,7 @@ function Workspace() {
     try {
       await canvasAPI.delete(id);
       setCanvases(canvases.filter(c => c._id !== id));
-    } catch (err) {
+    } catch {
       setError('Failed to delete canvas');
     }
   };
@@ -120,7 +117,7 @@ function Workspace() {
       setShowProfileModal(false);
       setAvatarFile(null);
       setAvatarPreview(null);
-    } catch (err) {
+    } catch {
       setError('Failed to update profile');
     }
   };

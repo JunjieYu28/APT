@@ -22,7 +22,10 @@ const io = socketIo(server, {
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/apt';
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.warn('MongoDB connection failed, using in-memory storage:', err.message);
+    // Continue without MongoDB - will use in-memory storage for development
+  });
 
 app.use(cors());
 app.use(express.json());

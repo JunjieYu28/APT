@@ -39,8 +39,6 @@ function Login() {
       } else {
         setError(result.error);
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -65,8 +63,6 @@ function Login() {
       } else {
         setError(result.error);
       }
-    } catch (err) {
-      setError('Google login failed');
     } finally {
       setLoading(false);
     }

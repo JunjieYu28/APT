@@ -19,6 +19,7 @@ function CanvasPage() {
     if (id) {
       loadCanvas();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
