@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
@@ -8,6 +9,22 @@ const fs = require('fs');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Rate limiters
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: 'Too many authentication attempts, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Configure multer for avatar upload
 const storage = multer.diskStorage({
@@ -41,7 +58,7 @@ const upload = multer({
 });
 
 // Register new user with email/password
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { email, password, nickname } = req.body;
 
@@ -84,7 +101,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login with email/password
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -124,7 +141,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Get current user profile
-router.get('/me', authMiddleware, async (req, res) => {
+router.get('/me', authMiddleware, generalLimiter, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
     if (!user) {
@@ -146,7 +163,7 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', authMiddleware, async (req, res) => {
+router.put('/profile', authMiddleware, generalLimiter, async (req, res) => {
   try {
     const { nickname } = req.body;
     const user = await User.findById(req.userId);
@@ -176,7 +193,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
 });
 
 // Upload avatar
-router.post('/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
+router.post('/avatar', authMiddleware, generalLimiter, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -214,7 +231,7 @@ router.post('/avatar', authMiddleware, upload.single('avatar'), async (req, res)
 });
 
 // Google OAuth callback (placeholder - requires Google OAuth setup)
-router.post('/google', async (req, res) => {
+router.post('/google', authLimiter, async (req, res) => {
   try {
     const { googleId, email, nickname, avatar } = req.body;
 

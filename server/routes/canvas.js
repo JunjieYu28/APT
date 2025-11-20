@@ -1,11 +1,20 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const Canvas = require('../models/Canvas');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
+// Rate limiter
+const canvasLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Get all canvases for the current user
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, canvasLimiter, async (req, res) => {
   try {
     const canvases = await Canvas.find({ owner: req.userId })
       .sort({ updatedAt: -1 })
@@ -19,7 +28,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get a specific canvas by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authMiddleware, canvasLimiter, async (req, res) => {
   try {
     const canvas = await Canvas.findOne({
       _id: req.params.id,
@@ -38,7 +47,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Create a new canvas
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, canvasLimiter, async (req, res) => {
   try {
     const { name, theme } = req.body;
 
@@ -62,7 +71,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Update a canvas
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, canvasLimiter, async (req, res) => {
   try {
     const { name, theme, drawingData, thumbnail } = req.body;
 
@@ -90,7 +99,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete a canvas
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, canvasLimiter, async (req, res) => {
   try {
     const canvas = await Canvas.findOneAndDelete({
       _id: req.params.id,
