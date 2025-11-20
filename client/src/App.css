@@ -78,3 +78,21 @@
   100% { transform: rotate(360deg); }
 }
 
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.loading-screen .spinner {
+  margin-bottom: 20px;
+}
+
+.loading-screen p {
+  color: #666;
+  font-size: 18px;
+}
+

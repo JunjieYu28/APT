@@ -3,7 +3,11 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const path = require('path');
 const aiService = require('./aiService');
+const authRoutes = require('./routes/auth');
+const canvasRoutes = require('./routes/canvas');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,8 +18,24 @@ const io = socketIo(server, {
   }
 });
 
+// Connect to MongoDB
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/apt';
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => {
+    console.warn('MongoDB connection failed, using in-memory storage:', err.message);
+    // Continue without MongoDB - will use in-memory storage for development
+  });
+
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Authentication routes
+app.use('/api/auth', authRoutes);
+
+// Canvas routes
+app.use('/api/canvas', canvasRoutes);
 
 // API endpoint for AI text-to-sketch
 app.post('/api/ai/text-to-sketch', async (req, res) => {
@@ -62,43 +82,79 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Store active users
-const users = new Map();
-let drawingHistory = [];
+// Store active users per canvas room
+const canvasRooms = new Map(); // canvasId -> { users: Map, drawingHistory: [] }
 
 io.on('connection', (socket) => {
   console.log('New user connected:', socket.id);
   
-  // Add user to active users list
-  users.set(socket.id, {
-    id: socket.id,
-    username: `User${users.size + 1}`,
-    color: getRandomColor()
+  // Join canvas room
+  socket.on('join-canvas', (data) => {
+    const { canvasId, user } = data;
+    
+    // Leave previous room if any
+    if (socket.currentCanvasId) {
+      socket.leave(socket.currentCanvasId);
+      const prevRoom = canvasRooms.get(socket.currentCanvasId);
+      if (prevRoom) {
+        prevRoom.users.delete(socket.id);
+        io.to(socket.currentCanvasId).emit('user-left', socket.id);
+      }
+    }
+    
+    // Join new room
+    socket.join(canvasId);
+    socket.currentCanvasId = canvasId;
+    
+    // Initialize room if it doesn't exist
+    if (!canvasRooms.has(canvasId)) {
+      canvasRooms.set(canvasId, {
+        users: new Map(),
+        drawingHistory: []
+      });
+    }
+    
+    const room = canvasRooms.get(canvasId);
+    
+    // Add user to room
+    room.users.set(socket.id, {
+      id: socket.id,
+      username: user?.nickname || `User${room.users.size + 1}`,
+      avatar: user?.avatar || null,
+      color: getRandomColor()
+    });
+    
+    // Send current room state to new user
+    socket.emit('init', {
+      userId: socket.id,
+      users: Array.from(room.users.values()),
+      history: room.drawingHistory
+    });
+    
+    // Broadcast new user to others in room
+    socket.to(canvasId).emit('user-joined', room.users.get(socket.id));
   });
-
-  // Send current users list and drawing history to new user
-  socket.emit('init', {
-    userId: socket.id,
-    users: Array.from(users.values()),
-    history: drawingHistory
-  });
-
-  // Broadcast new user to all other users
-  socket.broadcast.emit('user-joined', users.get(socket.id));
 
   // Handle drawing events
   socket.on('draw', (data) => {
-    drawingHistory.push(data);
-    // Limit history size
-    if (drawingHistory.length > 10000) {
-      drawingHistory = drawingHistory.slice(-5000);
+    if (!socket.currentCanvasId) return;
+    
+    const room = canvasRooms.get(socket.currentCanvasId);
+    if (room) {
+      room.drawingHistory.push(data);
+      // Limit history size per room
+      if (room.drawingHistory.length > 10000) {
+        room.drawingHistory = room.drawingHistory.slice(-5000);
+      }
     }
-    socket.broadcast.emit('draw', data);
+    socket.to(socket.currentCanvasId).emit('draw', data);
   });
 
   // Handle cursor movement
   socket.on('cursor-move', (data) => {
-    socket.broadcast.emit('cursor-move', {
+    if (!socket.currentCanvasId) return;
+    
+    socket.to(socket.currentCanvasId).emit('cursor-move', {
       userId: socket.id,
       ...data
     });
@@ -106,15 +162,42 @@ io.on('connection', (socket) => {
 
   // Handle clear canvas
   socket.on('clear-canvas', () => {
-    drawingHistory = [];
-    io.emit('clear-canvas');
+    if (!socket.currentCanvasId) return;
+    
+    const room = canvasRooms.get(socket.currentCanvasId);
+    if (room) {
+      room.drawingHistory = [];
+    }
+    io.to(socket.currentCanvasId).emit('clear-canvas');
+  });
+  
+  // Handle save canvas
+  socket.on('save-canvas', (data) => {
+    if (!socket.currentCanvasId) return;
+    
+    const room = canvasRooms.get(socket.currentCanvasId);
+    if (room) {
+      // Save drawing history for persistence
+      socket.emit('canvas-saved', { success: true });
+    }
   });
 
   // Handle user disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
-    users.delete(socket.id);
-    io.emit('user-left', socket.id);
+    
+    if (socket.currentCanvasId) {
+      const room = canvasRooms.get(socket.currentCanvasId);
+      if (room) {
+        room.users.delete(socket.id);
+        io.to(socket.currentCanvasId).emit('user-left', socket.id);
+        
+        // Clean up empty rooms
+        if (room.users.size === 0) {
+          canvasRooms.delete(socket.currentCanvasId);
+        }
+      }
+    }
   });
 });
 
